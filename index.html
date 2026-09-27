@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Houdini Layout Worklet 演示</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>CSS Houdini Layout Worklet 演示</h1>
+    <p class="subtitle">瀑布流 · 砖墙 · 环形 · 螺旋 —— 自定义布局 + 完整降级链路</p>
+    <div class="status-bar">
+      <span class="status" id="status-support">检测中…</span>
+      <span class="status" id="status-worklet">检测中…</span>
+      <span class="status" id="status-mode">—</span>
+    </div>
+  </header>
+
+  <div id="alerts"></div>
+
+  <section class="panel">
+    <h2>控制面板</h2>
+    <div class="controls">
+      <label>布局算法
+        <select id="layout-type">
+          <option value="masonry">瀑布流 masonry</option>
+          <option value="brick">砖墙 brick</option>
+          <option value="ring">环形 ring</option>
+          <option value="spiral">螺旋 spiral</option>
+        </select>
+      </label>
+      <label>间距 <span id="gap-value">12</span>px
+        <input type="range" id="gap" min="0" max="40" value="12">
+      </label>
+      <label>对齐
+        <select id="align">
+          <option value="start">start</option>
+          <option value="center">center</option>
+          <option value="end">end</option>
+        </select>
+      </label>
+      <label>列数（0=自动）
+        <input type="number" id="columns" min="0" max="8" value="0">
+      </label>
+      <label>渲染引擎
+        <select id="engine">
+          <option value="auto">自动</option>
+          <option value="houdini">Houdini Worklet</option>
+          <option value="fallback">JS 降级</option>
+        </select>
+      </label>
+      <label class="checkbox">
+        <input type="checkbox" id="use-worker" checked> Worker 卸载（&ge;150 项）
+      </label>
+    </div>
+    <div class="controls">
+      <button id="add">+ 添加 10 项</button>
+      <button id="add-late">+ 添加 5 个延迟尺寸项</button>
+      <button id="remove">− 移除 10 项</button>
+      <button id="reset">重置</button>
+      <span class="count">当前 <strong id="count">0</strong> 个子元素</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>自定义布局（<code>display: layout(...)</code>）</h2>
+    <div id="demo"></div>
+  </section>
+
+  <section class="panel">
+    <h2>性能监控</h2>
+    <div class="perf">
+      <span>平均布局耗时：<strong id="perf-avg">—</strong></span>
+      <span>最近一次：<strong id="perf-last">—</strong></span>
+      <span>长任务（&gt;50ms）：<strong id="perf-longtasks">0</strong></span>
+    </div>
+    <p class="note">性能数据通过 PerformanceObserver 采集并节流写入 IndexedDB（打开 DevTools → Application → IndexedDB → houdini-layout-demo 查看）。</p>
+  </section>
+
+  <section class="panel">
+    <h2>与 CSS Grid / Flex 的对比</h2>
+    <div class="compare">
+      <div>
+        <h3>CSS Grid（<code>auto-fill</code> + 行高对齐）</h3>
+        <div id="compare-grid" class="compare-box"></div>
+        <p class="note">Grid 是二维网格：行高由该行最高项决定，无法做出"每列独立高度"的瀑布流，更无法表达环形/螺旋。</p>
+      </div>
+      <div>
+        <h3>Flex（<code>flex-wrap</code>）</h3>
+        <div id="compare-flex" class="compare-box"></div>
+        <p class="note">Flex 是单轴换行：交叉轴按行拉伸对齐，同样无法错位咬合或沿曲线排布。</p>
+      </div>
+    </div>
+    <table class="diff">
+      <thead>
+        <tr><th>能力</th><th>Grid / Flex</th><th>Houdini Layout Worklet</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>瀑布流（列独立高度）</td><td>需 JS 或 <code>masonry</code> 实验特性</td><td>原生布局阶段实现</td></tr>
+        <tr><td>任意几何（环形/螺旋）</td><td>不支持</td><td>支持（自定义算法）</td></tr>
+        <tr><td>运行时机</td><td>—</td><td>浏览器布局管线内，随固有尺寸变化自动重排</td></tr>
+        <tr><td>主线程阻塞风险</td><td>无</td><td>算法过重会拖慢布局 → 需监控 + 降级</td></tr>
+        <tr><td>浏览器支持</td><td>全面</td><td>Chromium 系；其他需 JS 降级</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
