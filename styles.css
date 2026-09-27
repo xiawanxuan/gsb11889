@@ -1,0 +1,132 @@
+/* ---------- 基础 ---------- */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  background: #f4f6fa;
+  color: #1f2733;
+}
+.site-header {
+  padding: 20px 28px 12px;
+  background: linear-gradient(120deg, #1d2b53, #3b5bdb);
+  color: #fff;
+}
+.site-header h1 { margin: 0 0 6px; font-size: 22px; }
+.site-header p { margin: 0; opacity: .85; font-size: 13px; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  padding: 16px 28px 40px;
+  align-items: start;
+}
+.panel { display: flex; flex-direction: column; gap: 12px; }
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.card h2 { margin: 0 0 10px; font-size: 15px; }
+.card label { display: block; margin: 8px 0; font-size: 13px; }
+.card select, .card input[type="number"] {
+  width: 100%; margin-top: 4px; padding: 5px 8px;
+  border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;
+}
+.card input[type="range"] { width: 100%; }
+.checkbox { display: flex !important; gap: 6px; align-items: center; }
+.mono { font-family: ui-monospace, monospace; color: #3b5bdb; }
+
+.status-list { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 13px; }
+.status-list dt { color: #64748b; }
+.status-list dd { margin: 0; font-weight: 600; }
+
+.btn-row { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+button {
+  padding: 6px 12px; border: 1px solid #3b5bdb; border-radius: 6px;
+  background: #fff; color: #3b5bdb; font-size: 13px; cursor: pointer;
+}
+button:hover { background: #3b5bdb; color: #fff; }
+
+.perf { font-size: 13px; line-height: 1.7; }
+.perf-warning { color: #b91c1c; font-weight: 600; }
+.perf-ok { color: #15803d; }
+
+.notices { list-style: none; margin: 0; padding: 0; font-size: 12px; max-height: 180px; overflow: auto; }
+.notice { padding: 6px 8px; border-radius: 6px; margin-bottom: 6px; background: #f1f5f9; }
+.notice.ok { background: #dcfce7; color: #166534; }
+.notice.warn { background: #fef9c3; color: #854d0e; }
+.notice.error { background: #fee2e2; color: #991b1b; }
+
+/* ---------- 布局容器 ---------- */
+.stage { min-width: 0; }
+.layout-container {
+  /* 布局参数：worklet 与降级引擎都从自定义属性读取，保证行为一致 */
+  --layout-mode: masonry;
+  --gap: 12;
+  --align: start;
+  --columns: 0;
+  --row-height: 120;
+  --item-size: 160;
+  --estimated-height: 140;
+
+  position: relative;
+  display: block;
+  background: #fff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: height .2s ease;
+}
+/* worklet 就绪后切换为自定义布局 */
+.layout-container.worklet { display: layout(houdini); height: auto !important; }
+
+/* ---------- 子元素 ---------- */
+.item {
+  margin: 0;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-top: 3px solid var(--hue-accent, #5b8def);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .08);
+  font-size: 12px;
+  color: #475569;
+  overflow: hidden;
+}
+.item p { margin: 4px 10px; }
+.item-banner {
+  background: linear-gradient(120deg, var(--hue-accent, #5b8def), #dfe7fd);
+  opacity: .55;
+}
+.item .pending-label {
+  display: block; padding: 10px; color: #94a3b8; font-style: italic;
+}
+.item.estimated { outline: 2px dashed #f59e0b; outline-offset: -2px; }
+
+/* 降级引擎：绝对定位 + transform 摆放 */
+.layout-container:not(.worklet) .item {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition: transform .25s ease;
+}
+/* worklet 引擎：由 layout(houdini) 摆放，清除手动定位 */
+.layout-container.worklet .item {
+  position: static;
+  transform: none !important;
+  width: auto !important;
+}
+
+/* 尺寸未就绪信号 -> worklet 通过 childInputProperties 读取 */
+.item[data-pending="true"] { --pending: 1; }
+
+/* 循环依赖模拟：子元素高度依赖容器高度，容器高度又依赖子元素 */
+.layout-container.cycle-sim .item:nth-child(3n) { height: 120%; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+.cmp { margin: 8px 0 0; padding-left: 18px; font-size: 12px; line-height: 1.7; }
+.cmp code { background: #f1f5f9; padding: 0 4px; border-radius: 4px; }

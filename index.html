@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSS Houdini Layout Worklet 实验室</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <h1>CSS Houdini Layout Worklet 实验室</h1>
+  <p>自定义布局（瀑布流 / 砖墙 / 环形 / 螺旋）· 动态增删 · 参数化间距与对齐 · 自动降级与一致性校验</p>
+</header>
+
+<main class="layout">
+  <aside class="panel">
+    <section class="card">
+      <h2>运行状态</h2>
+      <dl id="status-list" class="status-list"></dl>
+    </section>
+
+    <section class="card">
+      <h2>布局控制</h2>
+      <label>布局算法
+        <select id="ctl-mode">
+          <option value="masonry">瀑布流 masonry</option>
+          <option value="brick">砖墙 brick</option>
+          <option value="ring">环形 ring</option>
+          <option value="spiral">螺旋 spiral</option>
+        </select>
+      </label>
+      <label>间距 <span id="ctl-gap-value" class="mono">12px</span>
+        <input id="ctl-gap" type="range" min="0" max="48" step="2" value="12">
+      </label>
+      <label>对齐方式
+        <select id="ctl-align">
+          <option value="start">start（起始）</option>
+          <option value="center">center（居中）</option>
+          <option value="end">end（末尾）</option>
+        </select>
+      </label>
+      <label>列数（0 = 自动）
+        <input id="ctl-columns" type="number" min="0" max="8" step="1" value="0">
+      </label>
+      <label>布局引擎
+        <select id="ctl-engine">
+          <option value="auto">自动（优先 Houdini）</option>
+          <option value="houdini">强制 Houdini Worklet</option>
+          <option value="fallback">强制 JS 降级</option>
+        </select>
+      </label>
+      <label class="checkbox">
+        <input id="ctl-cycle" type="checkbox"> 模拟循环依赖（子元素高度 = 120% 容器高度）
+      </label>
+    </section>
+
+    <section class="card">
+      <h2>子元素</h2>
+      <div class="btn-row">
+        <button id="btn-add">+ 添加</button>
+        <button id="btn-add10">+ 添加 10</button>
+        <button id="btn-remove">− 删除</button>
+      </div>
+      <div class="btn-row">
+        <button id="btn-churn">随机增删（演示）</button>
+        <button id="btn-verify">校验一致性</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>性能监控</h2>
+      <div id="perf-stats" class="perf">等待性能数据…</div>
+      <div class="btn-row"><button id="btn-clear-metrics">清空性能日志</button></div>
+    </section>
+
+    <section class="card">
+      <h2>通知</h2>
+      <ul id="notices" class="notices"></ul>
+    </section>
+
+    <section class="card">
+      <h2>与 Grid / Flex 的差异</h2>
+      <details>
+        <summary>展开对比</summary>
+        <ul class="cmp">
+          <li><b>表达能力</b>：Grid/Flex 是一维/二维规则流；环形、螺旋、最短列瀑布流无法用声明式 Grid/Flex 表达，Layout Worklet 可任意编程。</li>
+          <li><b>瀑布流</b>：Grid 的 <code>masonry</code> 值长期停留在实验阶段；Flex 多列会按列填充而非按最短列。Worklet 直接实现"最短列优先"。</li>
+          <li><b>性能</b>：Worklet 布局运行在浏览器布局管线内，无需 JS 测量-写回往返；降级引擎则需测量→计算→写 transform，多一次布局抖动。</li>
+          <li><b>响应式</b>：Grid/Flex 用媒体查询；Worklet 在 <code>layout()</code> 内直接读取容器约束做条件布局（类容器查询）。</li>
+          <li><b>兼容性</b>：Grid/Flex 全平台支持；Layout Worklet 目前仅 Chromium（需开启实验标志），生产环境必须降级。</li>
+        </ul>
+      </details>
+    </section>
+  </aside>
+
+  <section class="stage">
+    <div id="container" class="layout-container"></div>
+  </section>
+</main>
+
+<script src="js/layout-algorithms.js"></script>
+<script src="js/fallback.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
